@@ -32,22 +32,31 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var urlInput: TextInputEditText
     private lateinit var selectTimeButton: MaterialButton
-    private lateinit var scheduledTimeText: TextView
     private lateinit var updateNowButton: MaterialButton
     private lateinit var progressBar: ProgressBar
     private lateinit var statusText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable camera cutout usage in landscape
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode = 
+                android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
+        
+        // Enable edge-to-edge for portrait mode (draw behind status bar)
+        enableEdgeToEdge()
+        
         setContentView(R.layout.activity_main)
 
-        // Set status bar to match app background (slightly darker)
-        window.statusBarColor = android.graphics.Color.parseColor("#141414")
+        // Set status bar color and fullscreen mode based on orientation
+        updateStatusBarColor()
+        enableFullscreenInLandscape()
 
         // Initialize views
         urlInput = findViewById(R.id.urlInput)
         selectTimeButton = findViewById(R.id.selectTimeButton)
-        scheduledTimeText = findViewById(R.id.scheduledTimeText)
         updateNowButton = findViewById(R.id.updateNowButton)
         progressBar = findViewById(R.id.progressBar)
         statusText = findViewById(R.id.statusText)
@@ -133,9 +142,9 @@ class MainActivity : AppCompatActivity() {
 
         if (hour >= 0 && minute >= 0) {
             val timeString = formatTime(hour, minute)
-            scheduledTimeText.text = getString(R.string.scheduled_for, timeString)
+            selectTimeButton.text = timeString
         } else {
-            scheduledTimeText.text = getString(R.string.no_schedule_set)
+            selectTimeButton.text = getString(R.string.select_time)
         }
     }
 
@@ -151,10 +160,11 @@ class MainActivity : AppCompatActivity() {
     private fun updateWallpaperNow(url: String) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                // Show progress
+                // Show progress IN button - hide button text and icon
+                updateNowButton.text = ""
+                updateNowButton.icon = null
                 progressBar.visibility = View.VISIBLE
-                statusText.visibility = View.VISIBLE
-                statusText.text = getString(R.string.downloading)
+                statusText.visibility = View.GONE
                 updateNowButton.isEnabled = false
 
                 // Download and set wallpaper
@@ -164,27 +174,34 @@ class MainActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE
 
                 if (result.isSuccess) {
+                    // Show success message IN button
                     statusText.text = getString(R.string.wallpaper_updated)
-                    Toast.makeText(
-                        this@MainActivity,
-                        R.string.wallpaper_updated,
-                        Toast.LENGTH_LONG
-                    ).show()
+                    statusText.visibility = View.VISIBLE
+                    // Reset after 2 seconds
+                    updateNowButton.postDelayed({
+                        statusText.visibility = View.GONE
+                        updateNowButton.text = getString(R.string.update_now)
+                        updateNowButton.isEnabled = true
+                    }, 2000)
                 } else {
                     val error = result.exceptionOrNull()?.message ?: "Unknown error"
-                    statusText.text = getString(R.string.error_occurred, error)
-                    Toast.makeText(
-                        this@MainActivity,
-                        getString(R.string.error_occurred, error),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    statusText.text = "Failed"
+                    statusText.visibility = View.VISIBLE
+                    updateNowButton.postDelayed({
+                        statusText.visibility = View.GONE
+                        updateNowButton.text = getString(R.string.update_now)
+                        updateNowButton.isEnabled = true
+                    }, 2000)
                 }
-
-                updateNowButton.isEnabled = true
             } catch (e: Exception) {
                 progressBar.visibility = View.GONE
-                statusText.text = getString(R.string.error_occurred, e.message)
-                updateNowButton.isEnabled = true
+                statusText.text = "Error"
+                statusText.visibility = View.VISIBLE
+                updateNowButton.postDelayed({
+                    statusText.visibility = View.GONE
+                    updateNowButton.text = getString(R.string.update_now)
+                    updateNowButton.isEnabled = true
+                }, 2000)
                 e.printStackTrace()
             }
         }
@@ -206,6 +223,54 @@ class MainActivity : AppCompatActivity() {
                     data = Uri.parse("package:$packageName")
                 }
                 startActivity(intent)
+            }
+        }
+    }
+
+    private fun updateStatusBarColor() {
+        val orientation = resources.configuration.orientation
+        if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            // Landscape: Use app background color (independent of system settings)
+            window.statusBarColor = android.graphics.Color.parseColor("#07070D")
+        } else {
+            // Portrait: Transparent to show gradient
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+        }
+    }
+
+    private fun enableEdgeToEdge() {
+        val orientation = resources.configuration.orientation
+        if (orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+            // Portrait: Draw behind status bar with transparent status bar
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.setDecorFitsSystemWindows(false)
+            } else {
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = (
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
+            }
+        }
+    }
+
+    private fun enableFullscreenInLandscape() {
+        val orientation = resources.configuration.orientation
+        if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            // Enable immersive fullscreen mode in landscape (like YouTube/games)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.insetsController?.let { controller ->
+                    controller.hide(android.view.WindowInsets.Type.systemBars())
+                    controller.systemBarsBehavior = 
+                        android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = (
+                    android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                )
             }
         }
     }

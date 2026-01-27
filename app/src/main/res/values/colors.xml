@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark Grey Material3 Theme -->
-    <color name="md_theme_dark_primary">#B0BEC5</color>
-    <color name="md_theme_dark_onPrimary">#1C2126</color>
-    <color name="md_theme_dark_primaryContainer">#37474F</color>
-    <color name="md_theme_dark_onPrimaryContainer">#CFD8DC</color>
+    <!-- Purple-Pink Material3 Theme (matching website) -->
+    <color name="md_theme_dark_primary">#8B5CF6</color>
+    <color name="md_theme_dark_onPrimary">#FFFFFF</color>
+    <color name="md_theme_dark_primaryContainer">#7C3AED</color>
+    <color name="md_theme_dark_onPrimaryContainer">#E9D5FF</color>
     
-    <color name="md_theme_dark_secondary">#90A4AE</color>
-    <color name="md_theme_dark_onSecondary">#263238</color>
-    <color name="md_theme_dark_secondaryContainer">#455A64</color>
-    <color name="md_theme_dark_onSecondaryContainer">#B0BEC5</color>
+    <color name="md_theme_dark_secondary">#EC4899</color>
+    <color name="md_theme_dark_onSecondary">#FFFFFF</color>
+    <color name="md_theme_dark_secondaryContainer">#DB2777</color>
+    <color name="md_theme_dark_onSecondaryContainer">#FCE7F3</color>
     
-    <color name="md_theme_dark_tertiary">#A1887F</color>
-    <color name="md_theme_dark_onTertiary">#3E2723</color>
-    <color name="md_theme_dark_tertiaryContainer">#5D4037</color>
-    <color name="md_theme_dark_onTertiaryContainer">#D7CCC8</color>
+    <color name="md_theme_dark_tertiary">#A78BFA</color>
+    <color name="md_theme_dark_onTertiary">#1A1A2E</color>
+    <color name="md_theme_dark_tertiaryContainer">#6D28D9</color>
+    <color name="md_theme_dark_onTertiaryContainer">#DDD6FE</color>
     
     <color name="md_theme_dark_error">#F2B8B5</color>
     <color name="md_theme_dark_onError">#601410</color>
     <color name="md_theme_dark_errorContainer">#8C1D18</color>
     <color name="md_theme_dark_onErrorContainer">#F9DEDC</color>
     
-    <color name="md_theme_dark_background">#141414</color>
+    <color name="md_theme_dark_background">#07070D</color>
     <color name="md_theme_dark_onBackground">#E3E2E6</color>
-    <color name="md_theme_dark_surface">#2C2C2C</color>
+    <color name="md_theme_dark_surface">#1A1A2E</color>
     <color name="md_theme_dark_onSurface">#E3E2E6</color>
-    <color name="md_theme_dark_surfaceVariant">#424242</color>
+    <color name="md_theme_dark_surfaceVariant">#252540</color>
     <color name="md_theme_dark_onSurfaceVariant">#C4C7C5</color>
     
-    <color name="md_theme_dark_outline">#8E9192</color>
-    <color name="md_theme_dark_outlineVariant">#424942</color>
+    <color name="md_theme_dark_outline">#8B5CF6</color>
+    <color name="md_theme_dark_outlineVariant">#3B3B5C</color>
     <color name="md_theme_dark_scrim">#000000</color>
     
     <!-- Legacy colors -->
@@ -37,5 +37,5 @@
     <color name="white">#FFFFFFFF</color>
     
     <!-- Launcher icon background -->
-    <color name="ic_launcher_background">#2C2C2C</color>
+    <color name="ic_launcher_background">#1A1A2E</color>
 </resources>
