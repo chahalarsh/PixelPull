@@ -5,7 +5,7 @@ const modalClose = document.getElementById('modalClose');
 const continueBtn = document.getElementById('continueBtn');
 
 // GitHub Release URL
-const RELEASE_URL = 'https://github.com/chahalarsh/PixelPull-Beta_Unstable/releases/latest';
+const RELEASE_URL = 'https://github.com/chahalarsh/PixelPull/releases/latest';
 
 // Open modal when download button is clicked
 downloadBtn.addEventListener('click', () => {
