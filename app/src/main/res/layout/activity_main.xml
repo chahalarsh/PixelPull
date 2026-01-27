@@ -186,7 +186,7 @@
                 android:layout_height="56dp"
                 android:text="@string/update_now"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF"
+                android:textColor="#1A1A1A"
                 android:textStyle="bold"
                 android:background="@drawable/button_primary"
                 app:backgroundTint="@null"
@@ -199,7 +199,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center"
-                android:indeterminateTint="#FFFFFF"
+                android:indeterminateTint="#1A1A1A"
                 android:visibility="gone" />
 
             <!-- Status text overlaid on button -->
@@ -208,7 +208,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:textColor="#FFFFFF"
+                android:textColor="#1A1A1A"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:visibility="gone" />

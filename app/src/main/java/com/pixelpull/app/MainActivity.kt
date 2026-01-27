@@ -231,7 +231,7 @@ class MainActivity : AppCompatActivity() {
         val orientation = resources.configuration.orientation
         if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
             // Landscape: Use app background color (independent of system settings)
-            window.statusBarColor = android.graphics.Color.parseColor("#07070D")
+            window.statusBarColor = android.graphics.Color.parseColor("#141414")
         } else {
             // Portrait: Transparent to show gradient
             window.statusBarColor = android.graphics.Color.TRANSPARENT
