@@ -10,16 +10,20 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.NumberPicker
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,6 +35,7 @@ import java.util.Locale
 class MainActivity : AppCompatActivity() {
 
     private lateinit var urlInput: TextInputEditText
+    private lateinit var selectLocationButton: MaterialButton
     private lateinit var selectTimeButton: MaterialButton
     private lateinit var updateNowButton: MaterialButton
     private lateinit var progressBar: ProgressBar
@@ -56,6 +61,7 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize views
         urlInput = findViewById(R.id.urlInput)
+        selectLocationButton = findViewById(R.id.selectLocationButton)
         selectTimeButton = findViewById(R.id.selectTimeButton)
         updateNowButton = findViewById(R.id.updateNowButton)
         progressBar = findViewById(R.id.progressBar)
@@ -65,10 +71,17 @@ class MainActivity : AppCompatActivity() {
         val savedUrl = PreferencesManager.getWallpaperUrl(this)
         urlInput.setText(savedUrl)
 
+        // Load saved location
+        updateLocationDisplay()
+
         // Load saved schedule
         updateScheduleDisplay()
 
         // Set up button listeners
+        selectLocationButton.setOnClickListener {
+            showLocationPicker()
+        }
+        
         selectTimeButton.setOnClickListener {
             showTimePicker()
         }
@@ -80,8 +93,10 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // Save URL
                 PreferencesManager.saveWallpaperUrl(this, url)
+                // Get saved location
+                val location = PreferencesManager.getWallpaperLocation(this)
                 // Update wallpaper
-                updateWallpaperNow(url)
+                updateWallpaperNow(url, location)
             }
         }
 
@@ -89,51 +104,192 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             checkExactAlarmPermission()
         }
+        
+        // Create notification channel
+        NotificationHelper.createNotificationChannel(this)
+        
+        // Request notification permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestNotificationPermission()
+        }
+    }
+    
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
     }
 
     private fun showTimePicker() {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_time_selector, null)
+        bottomSheetDialog.setContentView(view)
+        
+        // Get current time or default
         val hour = PreferencesManager.getScheduleHour(this)
         val minute = PreferencesManager.getScheduleMinute(this)
-
+        
         val currentHour = if (hour >= 0) hour else Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val currentMinute = if (minute >= 0) minute else Calendar.getInstance().get(Calendar.MINUTE)
-
-        val picker = MaterialTimePicker.Builder()
-            .setTimeFormat(TimeFormat.CLOCK_12H)
-            .setHour(currentHour)
-            .setMinute(currentMinute)
-            .setTitleText("Select update time")
-            .build()
-
-        picker.addOnPositiveButtonClickListener {
-            val selectedHour = picker.hour
-            val selectedMinute = picker.minute
-
+        val currentMinute = if (minute >= 0) minute else 0
+        
+        // Setup NumberPickers
+        val hourPicker = view.findViewById<NumberPicker>(R.id.hourPicker)
+        val minutePicker = view.findViewById<NumberPicker>(R.id.minutePicker)
+        val ampmPicker = view.findViewById<NumberPicker>(R.id.ampmPicker)
+        
+        // Hour picker (1-12)
+        hourPicker?.apply {
+            minValue = 1
+            maxValue = 12
+            value = if (currentHour == 0) 12 else if (currentHour > 12) currentHour - 12 else currentHour
+            wrapSelectorWheel = true
+            setOnValueChangedListener { _, _, _ ->
+                performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+            }
+        }
+        
+        // Minute picker (0-59)
+        minutePicker?.apply {
+            minValue = 0
+            maxValue = 59
+            value = currentMinute
+            wrapSelectorWheel = true
+            setFormatter { String.format("%02d", it) }
+            setOnValueChangedListener { _, _, _ ->
+                performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+            }
+        }
+        
+        // AM/PM picker
+        ampmPicker?.apply {
+            minValue = 0
+            maxValue = 1
+            displayedValues = arrayOf("AM", "PM")
+            value = if (currentHour >= 12) 1 else 0
+            wrapSelectorWheel = false
+            setOnValueChangedListener { _, _, _ ->
+                performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+            }
+        }
+        
+        // Set Time button - Save the selected time
+        view.findViewById<MaterialButton>(R.id.setTimeButton)?.setOnClickListener {
+            val selectedHour12 = hourPicker?.value ?: 12
+            val isAM = ampmPicker?.value == 0
+            val selectedMinute = minutePicker?.value ?: 0
+            
+            // Convert to 24-hour format
+            val selectedHour24 = when {
+                selectedHour12 == 12 && isAM -> 0  // 12 AM = 0
+                selectedHour12 == 12 && !isAM -> 12  // 12 PM = 12
+                !isAM -> selectedHour12 + 12  // PM hours (1-11)
+                else -> selectedHour12  // AM hours (1-11)
+            }
+            
             // Save URL first
             val url = urlInput.text.toString().trim()
             if (url.isNotEmpty()) {
                 PreferencesManager.saveWallpaperUrl(this, url)
             }
-
+            
             // Save schedule
-            PreferencesManager.saveScheduleTime(this, selectedHour, selectedMinute)
-
+            PreferencesManager.saveScheduleTime(this, selectedHour24, selectedMinute)
+            
             // Schedule alarm
-            AlarmScheduler.scheduleWallpaperUpdate(this, selectedHour, selectedMinute)
-
+            AlarmScheduler.scheduleWallpaperUpdate(this, selectedHour24, selectedMinute)
+            
             // Update display
             updateScheduleDisplay()
-
+            
             // Show confirmation
-            val timeString = formatTime(selectedHour, selectedMinute)
-            Toast.makeText(
-                this,
-                getString(R.string.schedule_saved, timeString),
-                Toast.LENGTH_LONG
-            ).show()
+            val timeString = formatTime(selectedHour24, selectedMinute)
+            Toast.makeText(this, getString(R.string.schedule_saved, timeString), Toast.LENGTH_LONG).show()
+            
+            bottomSheetDialog.dismiss()
         }
+        
+        bottomSheetDialog.show()
+    }
+    
 
-        picker.show(supportFragmentManager, "TIME_PICKER")
+
+    private fun showLocationPicker() {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_location_selector, null)
+        bottomSheetDialog.setContentView(view)
+        
+        // Get current selection
+        val currentLocation = PreferencesManager.getWallpaperLocation(this)
+        
+        // Find views
+        val optionHome = view.findViewById<MaterialCardView>(R.id.optionHome)
+        val optionLock = view.findViewById<MaterialCardView>(R.id.optionLock)
+        val optionBoth = view.findViewById<MaterialCardView>(R.id.optionBoth)
+        
+        val iconHomeSelected = view.findViewById<ImageView>(R.id.iconHomeSelected)
+        val iconLockSelected = view.findViewById<ImageView>(R.id.iconLockSelected)
+        val iconBothSelected = view.findViewById<ImageView>(R.id.iconBothSelected)
+        
+        // Update UI based on current selection
+        fun updateSelection(location: PreferencesManager.WallpaperLocation) {
+            iconHomeSelected.visibility = if (location == PreferencesManager.WallpaperLocation.HOME) View.VISIBLE else View.GONE
+            iconLockSelected.visibility = if (location == PreferencesManager.WallpaperLocation.LOCK) View.VISIBLE else View.GONE
+            iconBothSelected.visibility = if (location == PreferencesManager.WallpaperLocation.BOTH) View.VISIBLE else View.GONE
+            
+            // Update card stroke colors
+            optionHome.strokeColor = if (location == PreferencesManager.WallpaperLocation.HOME) 
+                android.graphics.Color.parseColor("#FFFFFF") else android.graphics.Color.parseColor("#3A3A3A")
+            optionLock.strokeColor = if (location == PreferencesManager.WallpaperLocation.LOCK) 
+                android.graphics.Color.parseColor("#FFFFFF") else android.graphics.Color.parseColor("#3A3A3A")
+            optionBoth.strokeColor = if (location == PreferencesManager.WallpaperLocation.BOTH) 
+                android.graphics.Color.parseColor("#FFFFFF") else android.graphics.Color.parseColor("#3A3A3A")
+        }
+        
+        // Show current selection
+        updateSelection(currentLocation)
+        
+        // Set click listeners
+        optionHome.setOnClickListener {
+            PreferencesManager.saveWallpaperLocation(this, PreferencesManager.WallpaperLocation.HOME)
+            updateSelection(PreferencesManager.WallpaperLocation.HOME)
+            updateLocationDisplay()
+            bottomSheetDialog.dismiss()
+        }
+        
+        optionLock.setOnClickListener {
+            PreferencesManager.saveWallpaperLocation(this, PreferencesManager.WallpaperLocation.LOCK)
+            updateSelection(PreferencesManager.WallpaperLocation.LOCK)
+            updateLocationDisplay()
+            bottomSheetDialog.dismiss()
+        }
+        
+        optionBoth.setOnClickListener {
+            PreferencesManager.saveWallpaperLocation(this, PreferencesManager.WallpaperLocation.BOTH)
+            updateSelection(PreferencesManager.WallpaperLocation.BOTH)
+            updateLocationDisplay()
+            bottomSheetDialog.dismiss()
+        }
+        
+        bottomSheetDialog.show()
+    }
+
+    private fun updateLocationDisplay() {
+        val location = PreferencesManager.getWallpaperLocation(this)
+        selectLocationButton.text = when (location) {
+            PreferencesManager.WallpaperLocation.HOME -> getString(R.string.location_home)
+            PreferencesManager.WallpaperLocation.LOCK -> getString(R.string.location_lock)
+            PreferencesManager.WallpaperLocation.BOTH -> getString(R.string.location_both)
+        }
     }
 
     private fun updateScheduleDisplay() {
@@ -157,7 +313,7 @@ class MainActivity : AppCompatActivity() {
         return format.format(calendar.time)
     }
 
-    private fun updateWallpaperNow(url: String) {
+    private fun updateWallpaperNow(url: String, location: PreferencesManager.WallpaperLocation) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 // Show progress IN button - hide button text and icon
@@ -168,7 +324,7 @@ class MainActivity : AppCompatActivity() {
                 updateNowButton.isEnabled = false
 
                 // Download and set wallpaper
-                val result = WallpaperService.downloadAndSetWallpaper(this@MainActivity, url)
+                val result = WallpaperService.downloadAndSetWallpaper(this@MainActivity, url, location)
 
                 // Hide progress
                 progressBar.visibility = View.GONE

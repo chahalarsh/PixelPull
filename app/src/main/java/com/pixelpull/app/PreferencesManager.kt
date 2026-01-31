@@ -9,8 +9,13 @@ object PreferencesManager {
     private const val KEY_SCHEDULE_HOUR = "schedule_hour"
     private const val KEY_SCHEDULE_MINUTE = "schedule_minute"
     private const val KEY_SCHEDULE_ENABLED = "schedule_enabled"
+    private const val KEY_WALLPAPER_LOCATION = "wallpaper_location"
     
     private const val DEFAULT_URL = "https://lifecal-virid.vercel.app/months?height=2340&width=1080"
+    
+    enum class WallpaperLocation {
+        HOME, LOCK, BOTH
+    }
     
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -42,5 +47,18 @@ object PreferencesManager {
     
     fun isScheduleEnabled(context: Context): Boolean {
         return getPrefs(context).getBoolean(KEY_SCHEDULE_ENABLED, false)
+    }
+    
+    fun saveWallpaperLocation(context: Context, location: WallpaperLocation) {
+        getPrefs(context).edit().putString(KEY_WALLPAPER_LOCATION, location.name).apply()
+    }
+    
+    fun getWallpaperLocation(context: Context): WallpaperLocation {
+        val locationName = getPrefs(context).getString(KEY_WALLPAPER_LOCATION, WallpaperLocation.BOTH.name)
+        return try {
+            WallpaperLocation.valueOf(locationName ?: WallpaperLocation.BOTH.name)
+        } catch (e: IllegalArgumentException) {
+            WallpaperLocation.BOTH
+        }
     }
 }

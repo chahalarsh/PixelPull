@@ -11,7 +11,11 @@ import java.io.IOException
 
 object WallpaperService {
     
-    suspend fun downloadAndSetWallpaper(context: Context, url: String): Result<String> {
+    suspend fun downloadAndSetWallpaper(
+        context: Context, 
+        url: String, 
+        location: PreferencesManager.WallpaperLocation = PreferencesManager.WallpaperLocation.BOTH
+    ): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
                 // Download image
@@ -39,9 +43,19 @@ object WallpaperService {
                         IOException("Failed to decode image")
                     )
 
-                // Set wallpaper
+                // Set wallpaper based on location preference
                 val wallpaperManager = WallpaperManager.getInstance(context)
-                wallpaperManager.setBitmap(bitmap)
+                when (location) {
+                    PreferencesManager.WallpaperLocation.HOME -> {
+                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                    }
+                    PreferencesManager.WallpaperLocation.LOCK -> {
+                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                    }
+                    PreferencesManager.WallpaperLocation.BOTH -> {
+                        wallpaperManager.setBitmap(bitmap)
+                    }
+                }
 
                 Result.success("Wallpaper updated successfully")
             } catch (e: Exception) {

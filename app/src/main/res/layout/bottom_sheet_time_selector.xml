@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bottom_sheet_background"
+    android:paddingTop="8dp"
+    android:paddingBottom="24dp">
+
+    <!-- Drag Handle -->
+    <View
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bottom_sheet_handle"
+        android:alpha="0.4" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/schedule_time_title"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="6dp" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/schedule_time_subtitle"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="#A0A0A0"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Custom Time Picker -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="#2C2C2C"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#3A3A3A"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <!-- Hour Picker -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hour"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="#A0A0A0"
+                    android:layout_marginBottom="12dp" />
+
+                <NumberPicker
+                    android:id="@+id/hourPicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="140dp"
+                    android:theme="@style/NumberPickerTheme" />
+
+            </LinearLayout>
+
+            <!-- Minute Picker -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Minute"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="#A0A0A0"
+                    android:layout_marginBottom="12dp" />
+
+                <NumberPicker
+                    android:id="@+id/minutePicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="140dp"
+                    android:theme="@style/NumberPickerTheme" />
+
+            </LinearLayout>
+
+            <!-- AM/PM Picker -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Period"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="#A0A0A0"
+                    android:layout_marginBottom="12dp" />
+
+                <NumberPicker
+                    android:id="@+id/ampmPicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="140dp"
+                    android:theme="@style/NumberPickerTheme" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Set Time Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/setTimeButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="Set Time"
+        android:textColor="#1A1A1A"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        app:backgroundTint="#FFFFFF"
+        app:cornerRadius="12dp"
+        app:elevation="0dp"
+        style="@style/Widget.Material3.Button" />
+
+</LinearLayout>
+
+</ScrollView>

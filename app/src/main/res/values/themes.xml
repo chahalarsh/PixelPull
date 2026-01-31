@@ -52,4 +52,12 @@
     <style name="CustomTimePickerTitle" parent="Widget.Material3.MaterialTimePicker.Display">
         <item name="android:textColor">#64B5F6</item>
     </style>
+    
+    <!-- NumberPicker Theme for Dark Mode -->
+    <style name="NumberPickerTheme">
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#A0A0A0</item>
+        <item name="android:colorControlNormal">#FFFFFF</item>
+        <item name="android:textSize">18sp</item>
+    </style>
 </resources>

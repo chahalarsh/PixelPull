@@ -15,26 +15,20 @@ class WallpaperUpdateReceiver : BroadcastReceiver() {
     
     override fun onReceive(context: Context, intent: Intent) {
         val url = PreferencesManager.getWallpaperUrl(context)
+        val location = PreferencesManager.getWallpaperLocation(context)
         
         // Download and set wallpaper in background
         CoroutineScope(Dispatchers.IO).launch {
-            val result = WallpaperService.downloadAndSetWallpaper(context, url)
+            val result = WallpaperService.downloadAndSetWallpaper(context, url, location)
             
-            // Show toast on main thread
-            CoroutineScope(Dispatchers.Main).launch {
-                if (result.isSuccess) {
-                    Toast.makeText(
-                        context,
-                        "Wallpaper updated automatically",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        context,
-                        "Failed to update wallpaper: ${result.exceptionOrNull()?.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+            // Show notification based on result (app is in background)
+            if (result.isSuccess) {
+                // Optionally show success notification (can be disabled if too verbose)
+                // NotificationHelper.showSuccessNotification(context)
+            } else {
+                // Show error notification
+                val errorMessage = result.exceptionOrNull()?.message ?: "Unknown error occurred"
+                NotificationHelper.showErrorNotification(context, errorMessage)
             }
         }
         

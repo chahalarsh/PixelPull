@@ -7,11 +7,23 @@
     <string name="url_hint">Enter wallpaper image URL</string>
     <string name="url_instructions">Enter any image URL that you want to use as your wallpaper. The app will automatically download and update your wallpaper daily at your chosen time. You can use dynamic wallpaper services or any publicly accessible image URL.</string>
     
+    <!-- Wallpaper Screen -->
+    <string name="wallpaper_location_label">Wallpaper Screen</string>
+    <string name="location_subtitle">Choose where to apply your wallpaper</string>
+    <string name="location_home">Home Screen</string>
+    <string name="location_home_desc">Apply wallpaper to home screen only</string>
+    <string name="location_lock">Lock Screen</string>
+    <string name="location_lock_desc">Apply wallpaper to lock screen only</string>
+    <string name="location_both">Home &amp; Lock Screen</string>
+    <string name="location_both_desc">Apply wallpaper to both screens</string>
+    
     <!-- Schedule -->
     <string name="schedule_label">Daily Schedule</string>
     <string name="select_time">Schedule Time</string>
     <string name="no_schedule_set">No schedule set</string>
     <string name="scheduled_for">Scheduled for %s</string>
+    <string name="schedule_time_title">Schedule Time</string>
+    <string name="schedule_time_subtitle">Choose when to update your wallpaper daily</string>
     
     <!-- Actions -->
     <string name="update_now">Update Wallpaper Now</string>
